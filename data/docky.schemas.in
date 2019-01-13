@@ -238,6 +238,22 @@
 			</locale>
 		</schema>
 		<schema>
+			<key>/schemas/apps/docky-2/Docky/Interface/DockPreferences/DockN/DesktopTopMargin</key>
+			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock1/DesktopTopMargin</applyto>
+			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock2/DesktopTopMargin</applyto>
+			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock3/DesktopTopMargin</applyto>
+			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock4/DesktopTopMargin</applyto>
+			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock5/DesktopTopMargin</applyto>
+			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock6/DesktopTopMargin</applyto>
+			<owner>docky</owner>
+			<type>int</type>
+			<default>0</default>
+			<locale name="C">
+				<short>Desktop top margin</short>
+				<long>The number of extra pixels for top margin of the dock.</long>
+			</locale>
+		</schema>
+		<schema>
 			<key>/schemas/apps/docky-2/Docky/Interface/DockPreferences/DockN/IconSize</key>
 			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock1/IconSize</applyto>
 			<applyto>/apps/docky-2/Docky/Interface/DockPreferences/Dock2/IconSize</applyto>

@@ -53,6 +53,8 @@ namespace Docky.Interface
 		DockPosition Position { get; set; }
 		
 		int HotAreaPadding { get; set; }
+
+		int DesktopTopMargin { get; set; }
 		
 		int IconSize { get; set; }
 		

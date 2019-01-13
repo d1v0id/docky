@@ -643,6 +643,10 @@ namespace Docky.Interface
 			get { return Preferences.HotAreaPadding; }
 		}
 		
+		int DesktopTopMargin {
+			get { return Preferences.DesktopTopMargin; }
+		}
+		
 		/// <summary>
 		/// The int size a fully zoomed icon will display at.
 		/// </summary>
@@ -1567,6 +1571,9 @@ namespace Docky.Interface
 		void UpdateMonitorGeometry ()
 		{
 			monitor_geo = Screen.GetMonitorGeometry (Monitor);
+
+			monitor_geo.Y = monitor_geo.Y + DesktopTopMargin;
+			monitor_geo.Height = monitor_geo.Height - DesktopTopMargin;
 		}
 		
 		void DelayedSetSizeRequest ()
