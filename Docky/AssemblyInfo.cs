@@ -38,7 +38,7 @@ using System.Runtime.CompilerServices;
 //
 // You can specify all values by your own or you can build default build and revision
 // numbers with the '*' character (the default):
-[assembly: AssemblyVersion("1845")]
+[assembly: AssemblyVersion("1865")]
 
 // The following attributes specify the key for the sign of your assembly. See the
 // .NET Framework documentation for more information about signing.
@@ -50,10 +50,10 @@ namespace Docky
 {
 	internal static class AssemblyInfo
 	{
-		public const string DisplayVersion = "2.2.1";
-		public const string VersionDetails = "bzr docky r1845";
-		public const string LocaleDirectory = "/usr/share/locale";
-		public const string InstallData = "/usr/share";
+		public const string DisplayVersion = "2.2.1.1";
+		public const string VersionDetails = "bzr docky r1865";
+		public const string LocaleDirectory = "/usr/local/share/locale";
+		public const string InstallData = "/usr/local/share";
 	}
 }
 

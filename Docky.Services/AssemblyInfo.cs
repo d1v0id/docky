@@ -50,10 +50,10 @@ namespace Docky.Services
 {
 	internal static class AssemblyInfo
 	{
-		public const string DisplayVersion = "2.2.1";
-		public const string VersionDetails = "bzr docky r1845";
-		public const string LocaleDirectory = "/usr/share/locale";
-		public const string DataDirectory = "/usr/share";
+		public const string DisplayVersion = "2.2.1.1";
+		public const string VersionDetails = "bzr docky r1865";
+		public const string LocaleDirectory = "/usr/local/share/locale";
+		public const string DataDirectory = "/usr/local/share";
 	}
 }
 

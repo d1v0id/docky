@@ -110,7 +110,7 @@ namespace Docky.Services
 		void InitializeNetworkManager ()
 		{
 			NetworkConnected = true;
-			if (nmTimer != 0) {
+			if (nmTimer > 0) {
 				GLib.Source.Remove (nmTimer);
 				nmTimer = 0;
 			}
@@ -118,10 +118,14 @@ namespace Docky.Services
 			if (Bus.System.NameHasOwner (NetworkManagerName)) {
 				try {
 					network = Bus.System.GetObject<INetworkManager> (NetworkManagerName, new ObjectPath (NetworkManagerPath));
-					NetworkConnected = State == NetworkState.Connected;
+					var state = State;
+					NetworkConnected = (state == NetworkState.ConnectedGlobal || state == NetworkState.ConnectedLocal
+					                    || state == NetworkState.ConnectedSite);
 					network.StateChanged += OnConnectionStatusChanged;
-					nmTimer = GLib.Timeout.Add (1 * 60 * 1000, () => { 
-						NetworkConnected = State == NetworkState.Connected;
+					nmTimer = GLib.Timeout.Add (1 * 60 * 1000, () => {
+						state = State;
+						NetworkConnected = (state == NetworkState.ConnectedGlobal || state == NetworkState.ConnectedLocal
+						                    || state == NetworkState.ConnectedSite);
 						return true;
 					});
 				} catch (Exception e) {
@@ -153,7 +157,8 @@ namespace Docky.Services
 		void OnConnectionStatusChanged (uint state)
 		{
 			NetworkState newState = (NetworkState) Enum.ToObject (typeof (NetworkState), state);
-			NetworkConnected = newState == NetworkState.Connected;
+			NetworkConnected = (newState == NetworkState.ConnectedGlobal || newState == NetworkState.ConnectedLocal
+			                    || newState == NetworkState.ConnectedSite);
 			
 			if (ConnectionStatusChanged != null) {
 				Delegate [] handlers = ConnectionStatusChanged.GetInvocationList ();
@@ -251,38 +256,32 @@ namespace Docky.Services
 			}
 		}
 		
-		const string PowerManagementName = "org.freedesktop.PowerManagement";
-		const string PowerManagementPath = "/org/freedesktop/PowerManagement";
-		const string DeviceKitPowerName = "org.freedesktop.DeviceKit.Power";
-		const string DeviceKitPowerPath = "/org/freedesktop/DeviceKit/Power";
 		const string UPowerName = "org.freedesktop.UPower";
 		const string UPowerPath = "/org/freedesktop/UPower";
 		
 		delegate void BoolDelegate (bool val);
 		
-		[Interface(PowerManagementName)]
-		interface IPowerManagement
-		{
-			bool GetOnBattery ();
-			event BoolDelegate OnBatteryChanged;
-		}
-		
-		[Interface(DeviceKitPowerName)]
-		interface IDeviceKitPower : org.freedesktop.DBus.Properties
-		{
-			event Action Changed;
-		}
-
 		[Interface(UPowerName)]
 		interface IUPower : org.freedesktop.DBus.Properties
 		{
+			//bool OnBattery { get; }
+
 			event Action Changed;
 		}
 		
+		bool GetBoolean (org.freedesktop.DBus.Properties dbusobj, string path, string propname) 
+		{
+			try {
+				return Boolean.Parse (dbusobj.Get (path, propname).ToString ());
+			} catch (Exception e) {
+				Log.Error ("{0}", e.Message);
+				Log.Debug (e.StackTrace);
+				return false;
+			}
+		}
+
 		bool on_battery;
 		
-		IPowerManagement power;
-		IDeviceKitPower devicekit;
 		IUPower upower;
 		
 		void InitializeBattery ()
@@ -296,16 +295,6 @@ namespace Docky.Services
 					upower.Changed += HandleUPowerChanged;
 					HandleUPowerChanged ();
 					Log<SystemService>.Debug ("Using org.freedesktop.UPower for battery information");
-				} else if (Bus.System.NameHasOwner (DeviceKitPowerName)) {
-					devicekit = Bus.System.GetObject<IDeviceKitPower> (DeviceKitPowerName, new ObjectPath (DeviceKitPowerPath));
-					devicekit.Changed += HandleDeviceKitChanged;
-					HandleDeviceKitChanged ();
-					Log<SystemService>.Debug ("Using org.freedesktop.DeviceKit.Power for battery information");
-				} else if (Bus.Session.NameHasOwner (PowerManagementName)) {
-					power = Bus.Session.GetObject<IPowerManagement> (PowerManagementName, new ObjectPath (PowerManagementPath));
-					power.OnBatteryChanged += PowerOnBatteryChanged;
-					on_battery = power.GetOnBattery ();
-					Log<SystemService>.Debug ("Using org.freedesktop.PowerManager for battery information");
 				}
 			} catch (Exception e) {
 				Log<SystemService>.Error ("Could not initialize power manager dbus: '{0}'", e.Message);
@@ -313,27 +302,9 @@ namespace Docky.Services
 			}
 		}
 
-		void PowerOnBatteryChanged (bool val)
-		{
-			if (on_battery != val) {
-				on_battery = val;
-				OnBatteryStateChanged ();
-			}
-		}
-		
-		void HandleDeviceKitChanged ()
-		{
-			bool newState = (bool) devicekit.Get (DeviceKitPowerName, "OnBattery");
-			
-			if (on_battery != newState) {
-				on_battery = newState;
-				OnBatteryStateChanged ();
-			}
-		}
-
 		void HandleUPowerChanged ()
 		{
-			bool newState = (bool) upower.Get (UPowerName, "OnBattery");
+			bool newState = GetBoolean (upower, UPowerName, "OnBattery");
 			
 			if (on_battery != newState) {
 				on_battery = newState;

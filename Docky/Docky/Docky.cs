@@ -116,7 +116,7 @@ namespace Docky
 		
 		static void CheckComposite (uint timeout)
 		{
-			if (checkCompositeTimer != 0) {
+			if (checkCompositeTimer > 0) {
 				GLib.Source.Remove (checkCompositeTimer);
 				checkCompositeTimer = 0;
 			}
@@ -129,6 +129,8 @@ namespace Docky
 			}
 			
 			checkCompositeTimer = GLib.Timeout.Add (timeout * 1000, delegate {
+				checkCompositeTimer = 0;
+
 				// no matter what, close any notify open
 				if (compositeNotify != null) {
 					compositeNotify.Close ();
@@ -139,7 +141,6 @@ namespace Docky
 					compositeNotify = Log.Notify (Catalog.GetString ("Docky requires compositing to work properly. " +
 						"Certain options are disabled and themes/animations will look incorrect. "));
 				
-				checkCompositeTimer = 0;
 				return false;
 			});
 		}
@@ -154,7 +155,7 @@ namespace Docky
 			about.Website = "https://launchpad.net/docky";
 			about.WebsiteLabel = "Website";
 			Gtk.AboutDialog.SetUrlHook ((dialog, link) => DockServices.System.Open (link));
-			about.Copyright = "Copyright \xa9 2009-2012 Docky Developers";
+			about.Copyright = "Copyright \xa9 2009-2015 Docky Developers";
 			about.Comments = "Docky. Simply Powerful.";
 			about.Authors = new[] {
 				"Jason Smith <jason@go-docky.com>",

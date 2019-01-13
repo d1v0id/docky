@@ -1,10 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_PREREQ([2.54])
+AC_PREREQ([2.65])
 
-AC_INIT([docky], [2.2.1],
+AC_INIT([docky], [2.2.1.1],
         [https://bugs.launchpad.net/docky], [docky],
         [https://launchpad.net/docky])
-AM_INIT_AUTOMAKE([1.10 foreign tar-pax dist-xz no-dist-gzip])
+AM_INIT_AUTOMAKE([1.11 foreign tar-pax dist-xz no-dist-gzip])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -55,6 +55,17 @@ PKG_CHECK_MODULES(GCONF, gconf-2.0)
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
 AM_GCONF_SOURCE_2
 
+dnl find gapi2-fixup
+AC_PATH_PROG(GAPI2FIXUP, gapi2-fixup, no)
+if test ! -x "$GAPI2FIXUP"; then
+   AC_MSG_ERROR([No gapi post-processor found])
+fi
+
+AC_PATH_PROG(GAPI2CODEGEN, gapi2-codegen, no)
+if test ! -x "$GAPI2CODEGEN"; then
+   AC_MSG_ERROR([No gapi code generator found])
+fi
+
 dnl Expansions
 SHAMROCK_EXPAND_LIBDIR
 SHAMROCK_EXPAND_BINDIR
@@ -67,6 +78,7 @@ GIO_SHARP_REQUIRED_VERSION=2.22.2
 GDK_PIXBUF_REQUIRED_VERSION=2.14.3
 DBUS_SHARP_REQUIRED_VERSION=0.7
 DBUS_SHARP_GLIB_REQUIRED_VERSION=0.5
+WNCK_REQUIRED_VERSION=2.20
 
 PKG_CHECK_MODULES([GCONF_SHARP_20], [gconf-sharp-2.0])
 PKG_CHECK_MODULES([GLIB_SHARP_20], [glib-sharp-2.0])
@@ -90,33 +102,21 @@ PKG_CHECK_MODULES([MONO_ADDINS], [mono-addins])
 PKG_CHECK_MODULES([MONO_ADDINS_GUI], [mono-addins-gui])
 PKG_CHECK_MODULES([MONO_ADDINS_SETUP], [mono-addins-setup])
 PKG_CHECK_MODULES([MONO_CAIRO], [mono-cairo])
-PKG_CHECK_MODULES([DBUS_SHARP_10], [dbus-sharp-1.0 >= $DBUS_SHARP_REQUIRED_VERSION])
-PKG_CHECK_MODULES([DBUS_SHARP_GLIB_10], [dbus-sharp-glib-1.0 >= $DBUS_SHARP_GLIB_REQUIRED_VERSION])
+PKG_CHECK_MODULES([DBUS_SHARP], [dbus-sharp-2.0 >= $DBUS_SHARP_REQUIRED_VERSION])
+PKG_CHECK_MODULES([DBUS_SHARP_GLIB], [dbus-sharp-glib-2.0 >= $DBUS_SHARP_GLIB_REQUIRED_VERSION])
 PKG_CHECK_MODULES([NOTIFY_SHARP], [notify-sharp])
-PKG_CHECK_MODULES([WNCK_SHARP_10], [wnck-sharp-1.0])
 
 dnl check for native libraries (ones that are p/invoked)
 PKG_CHECK_MODULES(GIO, gio-2.0 >= $GLIB_REQUIRED_VERSION)
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_REQUIRED_VERSION)
 PKG_CHECK_MODULES(GLIB, gobject-2.0 >= $GLIB_REQUIRED_VERSION)
 PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0 >= $GDK_PIXBUF_REQUIRED_VERSION)
-
-AC_SUBST([GCONF_SHARP_20_LIBS])
-AC_SUBST([GLIB_SHARP_20_LIBS])
-AC_SUBST([GIO_SHARP_LIBS])
-AC_SUBST([GKEYFILE_SHARP_LIBS])
-AC_SUBST([GNOME_KEYRING_SHARP_LIBS])
-AC_SUBST([GTK_SHARP_20_LIBS])
-AC_SUBST([MONO_ADDINS_LIBS])
-AC_SUBST([MONO_ADDINS_GUI_LIBS])
-AC_SUBST([MONO_ADDINS_SETUP_LIBS])
+PKG_CHECK_MODULES(WNCK, libwnck-1.0 >= $WNCK_REQUIRED_VERSION)
 
 MONO_CAIRO_LIBS="-r:Mono.Cairo"
 AC_SUBST([MONO_CAIRO_LIBS])
 
-AC_SUBST([DBUS_SHARP_10_LIBS])
-AC_SUBST([DBUS_SHARP_GLIB_10_LIBS])
-AC_SUBST([NOTIFY_SHARP_LIBS])
+WNCK_SHARP_10_LIBS="-r:$(pwd)/build/wnck-sharp1.dll"
 AC_SUBST([WNCK_SHARP_10_LIBS])
 
 AM_CONDITIONAL(CONFIG_REQUESTED, test -z "")
@@ -243,6 +243,8 @@ data/themes/HUD/Makefile
 data/themes/Matte/Makefile
 data/themes/Smoke/Makefile
 data/themes/Transparent/Makefile
+lib/Makefile
+lib/wnck-sharp1/Makefile
 m4/Makefile
 man/Makefile
 po/Makefile.in
