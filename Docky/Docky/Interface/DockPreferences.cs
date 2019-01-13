@@ -166,6 +166,23 @@ namespace Docky.Interface
 			}
 		}
 		
+		int? desktop_top_margin;
+		public int DesktopTopMargin {
+			get {
+				if (!desktop_top_margin.HasValue)
+					desktop_top_margin = Clamp (GetOption<int> ("DesktopTopMargin", 0), 100, 0);
+				return desktop_top_margin.Value;
+			}
+			set {
+				value = Clamp (value, 100, 0);
+				if (desktop_top_margin == value)
+					return;
+				desktop_top_margin = value;
+				SetOption<int?> ("DesktopTopMargin", value);
+				OnIconSizeChanged ();
+			}
+		}
+		
 		int? icon_size;
 		public int IconSize {
 			get {
@@ -314,6 +331,7 @@ namespace Docky.Interface
 			SetOption<bool> ("FadeOnHide", false);
 			SetOption<double> ("FadeOpacity", 0);
 			SetOption<int?> ("HotAreaPadding", 24);
+			SetOption<int?> ("DesktopTopMargin", 0);
 			SetOption<int?> ("IconSize", 48);
 			SetOption<bool?> ("IndicateMultipleWindows", true);
 			SetOption<string[]> ("Launchers", new string[0]);
